@@ -30,3 +30,34 @@ class SiglipVisionConfig:
         self.attention_dropout = attention_dropout
         self.layer_norm_eps = layer_norm_eps
         self.num_image_tokens = num_image_tokens
+        
+class SiglipVisionTransformer(nn.Module):
+    def __init__(self, config: SiglipVisionConfig):
+        super().__init()
+        self.congig = config
+        
+        self.embeddings = SiglipVisionEmbeddings(config)
+        self.encoder = SiglipEncoder(config)
+        self.post_layernorm = nn.Layernorm(embed_dim, eps=config.layer_norm_eps)
+        
+    def forward(self, pixel_values: torch.Tensor) -> torch.Tensor:
+        # pixel values [batch size, channels, h, w] -> [batch size, num patches, embed_dim]
+        hidden_states = self.embeddings(pixel_values)
+        
+        last_hidden_state = self.encoder(inputs_embeds=hidden_states)
+        
+        last_hidden_state = self.post_layernorm(last_hidden_state)
+        
+        return last_hidden_state
+    
+    
+class SiglipVisionModel(nn.Module):
+    
+    def __init__(self, config: SiglipVisionConfig):
+        super().__init()
+        self.congig = config
+        self.vision_model = SiglipVisionTransformer(config)
+        
+    def forward(self, pixel_values) ->Tuple:
+        # [batch size, channels, h, w] -> [batch size, num patches, embed_dim]
+        return self.vision_model(pixel_values=pixel_values)
