@@ -35,7 +35,7 @@ class SiglipVisionTransformer(nn.Module):
     def __init__(self, config: SiglipVisionConfig):
         super().__init()
         self.congig = config
-        
+        #
         self.embeddings = SiglipVisionEmbeddings(config)
         self.encoder = SiglipEncoder(config)
         self.post_layernorm = nn.Layernorm(embed_dim, eps=config.layer_norm_eps)
